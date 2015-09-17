@@ -34,6 +34,18 @@ describe OmniAuth::Strategies::CAS::LogoutRequest do
       subject
     end
 
+    it 'does not error if the namespaces are not defined' do
+      request.params['logoutRequest'] =
+        %Q[
+          <samlp:LogoutRequest ID="123abc-1234-ab12-cd34-1234abcd" Version="2.0" IssueInstant="#{Time.now.to_s}">
+            <saml:NameID>@NOT_USED@</saml:NameID>
+            <samlp:SessionIndex>ST-123456-123abc456def</samlp:SessionIndex>
+          </samlp:LogoutRequest>
+        ]
+      described_class.new(strategy, request).call(options)
+      expect(@rack_input).to eq 'name_id=&session_index='
+    end
+
     it 'are parsed and injected into the Rack Request parameters' do
       expect(@rack_input).to eq 'name_id=%40NOT_USED%40&session_index=ST-123456-123abc456def'
     end
