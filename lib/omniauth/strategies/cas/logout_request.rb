@@ -31,8 +31,8 @@ module OmniAuth
         def logout_request
           @logout_request ||= begin
             saml = parse_and_fix_namespaces(@request.params['logoutRequest'])
-            name_id = saml.xpath("//saml:NameID").text
-            sess_idx = saml.xpath("//samlp:SessionIndex").text
+            name_id = saml.xpath("//saml:NameID", 'saml' => 'urn:oasis:names:tc:SAML:2.0:protocol').text
+            sess_idx = saml.xpath("//samlp:SessionIndex", 'samlp' => 'urn:oasis:names:tc:SAML:2.0:assertion').text
             inject_params(name_id:name_id, session_index:sess_idx)
             @request
           end
@@ -41,7 +41,7 @@ module OmniAuth
         def parse_and_fix_namespaces(logout_request_xml)
           doc = Nokogiri.parse(logout_request_xml)
           namespaces = doc.collect_namespaces
-          if namespaces.include?('xmlns:samlp') && 
+          if namespaces.include?('xmlns:samlp') &&
               namespaces.include?('xmlns:saml')
             doc
           else
